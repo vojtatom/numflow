@@ -1,0 +1,5 @@
+include setup.cfg
+include setup.py
+global-include *.pyx
+global-include *.pxd
+global-include numflow/*.py
