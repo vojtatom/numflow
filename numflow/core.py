@@ -1,3 +1,3 @@
 
-def hello():
-    print("hello world")
+def log(logging):
+    print(logging)

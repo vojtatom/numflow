@@ -1,4 +1,6 @@
 *.numdat
+*.csv
+*.npy
 
 # Created by https://www.gitignore.io/api/c,c++,python
 # Edit at https://www.gitignore.io/?templates=c,c++,python

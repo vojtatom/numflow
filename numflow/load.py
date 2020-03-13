@@ -1,77 +1,66 @@
-import base64
-
-import numpy as np
-
 from .exception import NumflowException
-from .cython import RectilinearDataset
+from scipy.interpolate import RegularGridInterpolator 
+from .dataset import RectilinearDataset
+import numpy as np
+import gc
+from .cnumflow import construct_rectilinear, load_file
 
-def load_rectilinear(layout, format, file):
-    space_dim = len(format)
-    grid = []
 
+def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
+    """Loads dataset from .npy or .csv file in expected format.
+    Expected format: 4 or 6 columns with format, a single line looks like:
 
-    for _ in range(space_dim):
-        s = file.readline().strip()
-        r = base64.decodebytes(s)
-        grid.append(np.ascontiguousarray(np.frombuffer(r, dtype=np.float32)))
+            x-value, y-value, z-name, x-coordinate, y-coordinate, z-coordinate
 
-    format = [ int(b) for b in format ]
-    num_values = np.prod(format)
-    variables = {}
+    The method automatically detects rectilinear datasets. 
     
-    for title, count in zip(layout[::2], layout[1::2]):
-        s = file.readline().strip()
-        r = base64.decodebytes(s)
-        values = np.frombuffer(r, dtype=np.float32)
-        #print(num_values, int(count))
-        values = np.reshape(values, (*format, int(count)))
-        #print(values.shape)
-        variables[title] = values
-
-    for i in range(len(grid)):
-        #test for flips
-        if grid[i][0] > grid[i][1]:
-            grid[i] = np.ascontiguousarray(np.flip(grid[i]))
-
-            #flip data
-            for key in variables:
-                variables[key] = np.flip(variables[key], axis=i)
-
-    for key in variables:
-        variables[key] = np.ascontiguousarray(np.flip(variables[key], axis=i).flatten())
-
-    return RectilinearDataset(grid, variables)
-
-
-
-def load(filename):
-    with open(filename, "rb") as file:
-        # read layout information
-        layout = [ t.decode("utf-8")  for t in file.readline().strip().split(b" ") ]
-        format = [ t.decode("utf-8")  for t in file.readline().strip().split(b" ") ]
-        print(layout, format)
+    Arguments:
+        filename {str} -- filename with suffix .csv or .npy
+    
+    Keyword Arguments:
+        separator {str} -- csv separator, ignored for .npy files (default: {","})
+        points_clustering_tolerance {int} -- number of decimal points to be 
+        taken into account when scanning for rectilinear datasets (default: {4})
+        mode {str} -- mode of dataset, supported values: scipy or c (default: {"scipy"})
+    
+    Raises:
+        NumflowException: raised for unsupported or misformatted files
+    
+    Returns:
+        scipy.interpolator.RegularGridInterpolator -- default interpolator
+    """
+    if mode not in ["scipy", "c", "both"]:
+       raise NumflowException("Unknown mode: {}".format(mode)) 
+    
+    if filename.endswith(".npy"):
+        data = np.load(filename)
+    elif filename.endswith(".csv"):
+        data = load_file(filename, separator)
+    else:
+       raise NumflowException("Unknown file format: {}".format(filename)) 
 
 
-        # check validiy
-        if layout[0] != "layout:" or format[0] != "format:":
-            raise NumflowException("Data file format unknown")
 
-        del layout[0]
-        del format[0]
-
-        # number of variables in the data file
-        num_variables = len(layout) / 2
-        if num_variables == 0:
-            raise NumflowException(
-                "Unexpected number of variables: {}".format(num_variables))
+    if data.ndim != 2:
+        raise NumflowException("Unsuported number of dimensions: {}".format(data.ndim))
+    
+    if data.shape[1] != 6:
+        raise NumflowException("Unsuported number of dataset columns: {}".format(data.shape[1]))
 
 
-        if format[0] == "pointcloud":
-            raise NumflowException("Data format not implemented")
-        elif format[0] == "rectilinear":
-            del format[0]
-            return load_rectilinear(layout, format, file)
-        
-        
-        
-        
+    #try constructing rectilinear
+    gc.collect()
+    axis, data = construct_rectilinear(data, points_clustering_tolerance, mode)
+
+    if axis is None:
+        #TO BE IMPROVED
+        raise NumflowException("Only rectilinear datasets supported: {}".format(data.ndim))
+
+    if mode == "c":
+        return RectilinearDataset(axis, data)
+    if mode == "both":
+        return RectilinearDataset(axis, data), RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0])
+    #else scipy
+    return RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0])
+
+    

@@ -1,0 +1,31 @@
+import numpy as np
+from .cnumflow import interpolate3D as test
+from .exception import NumflowException
+
+
+class RectilinearDataset:
+    def __init__(self, axis, data):
+        self.axis = axis
+        self.data = data
+    
+
+    def __call__(self, points):
+        points = np.ascontiguousarray(np.array(points, dtype=np.float64))
+
+        if points.ndim != 2:
+            raise NumflowException("Expected array of points with 2 dimensions, got {}".format(points.dim))
+
+        dims = len(self.axis)
+        if points.shape[1] != dims:
+            raise NumflowException("Mismatch dataset dimensions, got {}, expected {}".format(points.shape[1], dims))
+
+        if dims == 3:
+            data = test(points, self.data, self.axis[0], self.axis[1], self.axis[2])
+        elif dims == 2:
+            #TODO implement 2D
+            raise NumflowException("Dimensions 2 interpolation: TO BE IMPLEMENTED")
+        else:
+            raise NumflowException("Unsupported number of dimensions")
+
+        return data
+    
