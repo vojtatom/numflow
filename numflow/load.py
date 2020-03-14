@@ -3,7 +3,7 @@ from scipy.interpolate import RegularGridInterpolator
 from .dataset import RectilinearDataset
 import numpy as np
 import gc
-from .cnumflow import construct_rectilinear, load_file
+from .cnumflow import construct_rectilinear_3d, load_file
 
 
 def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
@@ -40,7 +40,6 @@ def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
        raise NumflowException("Unknown file format: {}".format(filename)) 
 
 
-
     if data.ndim != 2:
         raise NumflowException("Unsuported number of dimensions: {}".format(data.ndim))
     
@@ -50,7 +49,8 @@ def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
 
     #try constructing rectilinear
     gc.collect()
-    axis, data = construct_rectilinear(data, points_clustering_tolerance, mode)
+
+    axis, data = construct_rectilinear_3d(data, points_clustering_tolerance)
 
     if axis is None:
         #TO BE IMPROVED

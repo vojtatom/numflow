@@ -1,39 +1,24 @@
 #pragma once
 
-#define FTYPE double
-#define INTTYPE int32_t
-
-struct dataset_line3D
+struct Dataset3D
 {
-    FTYPE vx, vy, vz;
-    FTYPE x, y, z;
+    int32_t dx, dy, dz;
+    double *ax, *ay, *az;
+    double *data;
 };
 
-struct dataset_line2D
+struct DataMatrix
 {
-    FTYPE vx, vy;
-    FTYPE x, y;
+    int32_t rows, columns;
+    double * data;
 };
 
-struct dataset3D
-{
-    INTTYPE dx, dy, dz;
-    FTYPE *ax, *ay, *az;
-    FTYPE *data;
-};
+//loading functions
+Dataset3D * load_rectilinear_3d(const DataMatrix * mat, double epsilon);
+DataMatrix * parse_file(const char * filename, const char * sep);
 
-struct marker
-{
-    INTTYPE i;
-    FTYPE fac;
-    INTTYPE status;
-};
+//interpolation
+double * interpolate_3d(const Dataset3D * dataset, double *points, const int32_t count);
 
-enum LookUp {
-    ok,
-    outOfRange,
-};
-
-void dataset_sort(FTYPE *data, INTTYPE columns, INTTYPE rows);
-FTYPE * interpolate_3d(const dataset3D * dataset, FTYPE *points, const INTTYPE count);
-
+void delete_dataset_3d(Dataset3D * ds);
+void delete_datamatrix(DataMatrix * dm);

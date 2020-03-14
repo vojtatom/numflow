@@ -13,7 +13,7 @@ cdef extern from "numpy/arrayobject.h":
         void PyArray_ENABLEFLAGS(np.ndarray arr, int flags)
 
 
-cdef pointer_to_int_one_d_numpy_array(void * ptr, np.npy_intp * size):
+cdef create_1d_int32_numpy(void * ptr, INTDTYPE d1):
     """
     Creates 1D np.ndarray by encapsulating INTDTYPE * pointer.
         
@@ -21,36 +21,41 @@ cdef pointer_to_int_one_d_numpy_array(void * ptr, np.npy_intp * size):
         :param np.npy_intp * size: pointer to 1D array containg info:   
             size[0] - number of points 
     """
+    cdef np.npy_intp size[1]
+    size[0] = d1
 
     cdef np.ndarray[INTDTYPE, ndim=1] arr = np.PyArray_SimpleNewFromData(1, size, np.NPY_INT32, ptr)
     PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
     return arr
 
 
-cdef pointer_to_double_one_d_numpy_array(void * ptr, np.npy_intp * size):
-    """
-    Creates 2D np.ndarray by encapsulating DTYPE * pointer.
-        
-        :param void *        ptr:  DTYPE pointer pointing to beginning
-        :param np.npy_intp * size: pointer to 1D array containg info:   
-            size[0] - number of points 
-    """
+cdef create_1d_double_numpy(void * ptr, INTDTYPE d1):
+    cdef np.npy_intp size[1]
+    size[0] = d1
 
     cdef np.ndarray[DTYPE, ndim=1] arr = np.PyArray_SimpleNewFromData(1, size, np.NPY_DOUBLE, ptr)
     PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
     return arr
 
 
-cdef pointer_to_two_d_numpy_array(void * ptr, np.npy_intp * size):
-    """
-    Creates np.ndarray by encapsulating DTYPE * pointer.
-        
-        :param void *        ptr:  DTYPE pointer pointing to beginning
-        :param np.npy_intp * size: pointer to 2D array containg info:   
-            size[0] - number of points 
-            size[1] - components per point
-    """
+cdef create_2d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2):
+    cdef np.npy_intp size[2]
+    size[0] = d1
+    size[1] = d2
 
     cdef np.ndarray[DTYPE, ndim=2] arr = np.PyArray_SimpleNewFromData(2, size, np.NPY_DOUBLE, ptr)
     PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
     return arr
+
+cdef create_4d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2, INTDTYPE d3, INTDTYPE d4):
+    cdef np.npy_intp size[4]
+    size[0] = d1
+    size[1] = d2
+    size[2] = d3
+    size[3] = d4
+
+    cdef np.ndarray[DTYPE, ndim=4] arr = np.PyArray_SimpleNewFromData(4, size, np.NPY_DOUBLE, ptr)
+    PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
+    return arr
+
+    

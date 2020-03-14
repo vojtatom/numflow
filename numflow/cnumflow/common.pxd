@@ -2,10 +2,12 @@
 # distutils: language=c++
 
 cimport numpy as np
-from .types cimport DTYPE
+from .types cimport DTYPE, INTDTYPE
 
-cdef pointer_to_double_one_d_numpy_array(void * ptr, np.npy_intp * size)
+cdef create_1d_int32_numpy(void * ptr, INTDTYPE d1)
 
-cdef pointer_to_int_one_d_numpy_array(void * ptr, np.npy_intp * size)
+cdef create_1d_double_numpy(void * ptr, INTDTYPE d1)
 
-cdef pointer_to_two_d_numpy_array(void * ptr, np.npy_intp * size)
+cdef create_2d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2)
+
+cdef create_4d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2, INTDTYPE d3, INTDTYPE d4)

@@ -10,9 +10,10 @@ import time
 
 
 
-points = (np.random.rand(10000, 3) - 0.5) * 1000000
-cdata, sdata = load("data.npy", mode="both")
-
+points = (np.random.rand(10000, 3) - [0, 0, 1]) * 1000000
+print(points)
+#cdata, sdata = load("data.npy", mode="both")
+cdata, sdata = load("sun.csv", mode="both")
 
 start = time.time()
 svalues = sdata(points)
@@ -23,4 +24,5 @@ cvalues = cdata(points)
 end = time.time()
 print(end - start)
 
+print(cvalues)
 print(np.allclose(svalues, cvalues))

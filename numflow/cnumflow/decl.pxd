@@ -5,7 +5,7 @@ cimport numpy as np
 from .types cimport DTYPE, INTDTYPE
 
 cdef extern from "cpp/numflow.hpp":
-    struct dataset3D:
+    struct Dataset3D:
         INTDTYPE dx
         INTDTYPE dy
         INTDTYPE dz
@@ -13,9 +13,16 @@ cdef extern from "cpp/numflow.hpp":
         DTYPE * ay
         DTYPE * az
         DTYPE * data
+
+    struct DataMatrix:
+        INTDTYPE rows
+        INTDTYPE columns
+        DTYPE * data
         
+    Dataset3D * load_rectilinear_3d(const DataMatrix * mat, DTYPE epsilon)
+    DataMatrix * parse_file(const char * filename, const char * sep)
 
-    void interpolate(const DTYPE * comp, INTDTYPE * ind, DTYPE * fac, INTDTYPE * grid_size, DTYPE * res)
-    void dataset_sort(DTYPE * data, INTDTYPE columns, INTDTYPE rows)
-    DTYPE * interpolate_3d(const dataset3D * dataset, DTYPE *points, const INTDTYPE count)
+    DTYPE * interpolate_3d(const Dataset3D * dataset, DTYPE *points, const INTDTYPE count)
 
+    void delete_dataset_3d(Dataset3D * ds)
+    void delete_datamatrix(DataMatrix * dm)

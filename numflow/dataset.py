@@ -1,5 +1,5 @@
 import numpy as np
-from .cnumflow import interpolate3D as test
+from .cnumflow import interpolate3D
 from .exception import NumflowException
 
 
@@ -20,7 +20,7 @@ class RectilinearDataset:
             raise NumflowException("Mismatch dataset dimensions, got {}, expected {}".format(points.shape[1], dims))
 
         if dims == 3:
-            data = test(points, self.data, self.axis[0], self.axis[1], self.axis[2])
+            data = interpolate3D(self.data, self.axis[0], self.axis[1], self.axis[2], points)
         elif dims == 2:
             #TODO implement 2D
             raise NumflowException("Dimensions 2 interpolation: TO BE IMPLEMENTED")
