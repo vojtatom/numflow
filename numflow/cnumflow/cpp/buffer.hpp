@@ -185,6 +185,13 @@ struct Buffer
         }*/
     }
 
+    void rob()
+    {
+        data = nullptr;
+        filled = 0;
+        allocated = 0;
+    }
+
     T *data;
     size_t filled;
     size_t allocated;
