@@ -6,7 +6,7 @@ import gc
 cimport numpy as np
 from .types cimport DTYPE, LONGDTYPE, INTDTYPE
 from .decl cimport load_rectilinear_3d, parse_file, DataMatrix, Dataset3D, delete_dataset_3d, delete_datamatrix, construct_level_3d
-from .common cimport create_2d_double_numpy, create_1d_double_numpy, create_4d_double_numpy
+from .common cimport create_2d_double_numpy, create_1d_double_numpy, create_4d_double_numpy, create_3d_double_numpy
 
 
 def load_file(file_name, separator): 
@@ -61,16 +61,30 @@ cdef c_build_pyramide_level_3d(DTYPE[:,:,:,::1] values, DTYPE[::1] x,  DTYPE[::1
     dataset.az = &z[0]
     dataset.data = &values[0, 0, 0, 0]
 
+    #calculates square of magnitude
     cdef Dataset3D * level = construct_level_3d(&dataset, xi, yi, zi)
 
     cdef np.ndarray[DTYPE, ndim=1] ax = create_1d_double_numpy(<void *>level[0].ax, level[0].dx)
     cdef np.ndarray[DTYPE, ndim=1] ay = create_1d_double_numpy(<void *>level[0].ay, level[0].dy)
     cdef np.ndarray[DTYPE, ndim=1] az = create_1d_double_numpy(<void *>level[0].az, level[0].dz)
-    cdef np.ndarray[DTYPE, ndim=4] data = create_4d_double_numpy(<void *>level[0].data, level[0].dx, level[0].dy, level[0].dz, 3)
+    cdef np.ndarray[DTYPE, ndim=3] data = create_3d_double_numpy(<void *>level[0].data, level[0].dx, level[0].dy, level[0].dz)
     
     delete_dataset_3d(level)
     return ax, ay, az, data
 
 
-def build_pyramide_level_3d(data, axis, x, y, z):
-    return c_build_pyramide_level_3d(data, axis[0], axis[1], axis[2], x, y, z)
+def sample_dataset_3d(data, axis, x, y, z):
+    ax, ay, az, data = c_build_pyramide_level_3d(data, axis[0], axis[1], axis[2], x, y, z)
+    
+    #not optimal
+    #fill positions of sampled values on rectilinear grid
+    pos = np.empty((x, y, z, 3))
+    for i in range(x):
+        for j in range(y):
+            for k in range(z):
+                pos[i, j, k, :] = ax[i], ay[j], az[k]
+
+    #get square root of all values
+    data = np.sqrt(data)     
+
+    return pos, data

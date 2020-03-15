@@ -657,9 +657,10 @@ DataMatrix *parse_file(const char *filename, const char *sep)
 Dataset3D * construct_level_3d(const Dataset3D * ds, int32_t x, int32_t y, int32_t z)
 {
     Dataset3D * nds = new Dataset3D();
-    nds->dx = max(x, 1);
-    nds->dy = max(y, 1);
-    nds->dz = max(z, 1);
+    //setup buffers and sizes
+    nds->dx = min(max(x, 1), ds->dx);
+    nds->dy = min(max(y, 1), ds->dy);
+    nds->dz = min(max(z, 1), ds->dz);
     nds->data = new double[nds->dx * nds->dy * nds->dz]{};
     nds->ax = new double[nds->dx];
     nds->ay = new double[nds->dy];
@@ -678,7 +679,6 @@ Dataset3D * construct_level_3d(const Dataset3D * ds, int32_t x, int32_t y, int32
     for (int32_t i = 0; i < nds->dz; i++)
         nds->az[i] = ds->az[(size_t)((i + 0.5) * stepz)];
     
-
     //get dataset values as max of assigned region
     size_t oi, ni;
     double len;
@@ -690,7 +690,8 @@ Dataset3D * construct_level_3d(const Dataset3D * ds, int32_t x, int32_t y, int32
             {
                 //calculate index in old array
                 oi = (i * ds->dy * ds->dz + j * ds->dz + k) * 3;
-                ni = i / stepx * nds->dy * nds->dz + j / stepy * nds->dz + k / stepz;
+                ni = (int) (i / stepx) * nds->dy * nds->dz + (int)(j / stepy) * nds->dz + k / stepz;
+
                 len = ds->data[oi] * ds->data[oi] + 
                       ds->data[oi + 1] * ds->data[oi + 1] + 
                       ds->data[oi + 2] * ds->data[oi + 2];

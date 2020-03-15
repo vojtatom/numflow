@@ -1,6 +1,7 @@
 import numpy as np
 from .cnumflow import interpolate3D
 from .exception import NumflowException
+from scipy.interpolate import RegularGridInterpolator
 
 
 class RectilinearDataset:
@@ -32,8 +33,10 @@ class RectilinearDataset:
     
 
 class ScipyRectilinearDataset:
-    def __init__(self, interpolator):
-        self.interpolator = interpolator
+    def __init__(self, axis, data):
+        self.interpolator = RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0])
+        self.axis = axis
+        self.data = data
         self.type = "scipy"
 
     def __call__(self, points):

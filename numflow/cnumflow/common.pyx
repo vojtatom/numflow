@@ -47,6 +47,16 @@ cdef np.ndarray[DTYPE, ndim=2] create_2d_double_numpy(void * ptr, INTDTYPE d1, I
     PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
     return arr
 
+cdef np.ndarray[DTYPE, ndim=3] create_3d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2, INTDTYPE d3):
+    cdef np.npy_intp size[4]
+    size[0] = d1
+    size[1] = d2
+    size[2] = d3
+
+    cdef np.ndarray[DTYPE, ndim=3] arr = np.PyArray_SimpleNewFromData(3, size, np.NPY_DOUBLE, ptr)
+    PyArray_ENABLEFLAGS(arr, np.NPY_ARRAY_OWNDATA)
+    return arr
+
 cdef np.ndarray[DTYPE, ndim=4] create_4d_double_numpy(void * ptr, INTDTYPE d1, INTDTYPE d2, INTDTYPE d3, INTDTYPE d4):
     cdef np.npy_intp size[4]
     size[0] = d1

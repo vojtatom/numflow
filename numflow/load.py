@@ -1,12 +1,11 @@
 from .exception import NumflowException
-from scipy.interpolate import RegularGridInterpolator 
 from .dataset import RectilinearDataset, ScipyRectilinearDataset
 import numpy as np
 import gc
-from .cnumflow import construct_rectilinear_3d, load_file
+from .cnumflow import construct_rectilinear_3d, load_file, sample_dataset_3d
 
 
-def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
+def load(filename, separator=",", points_clustering_tolerance=0.0001, mode="scipy"):
     """Loads dataset from .npy or .csv file in expected format.
     Expected format: 4 or 6 columns with format, a single line looks like:
 
@@ -19,7 +18,7 @@ def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
     
     Keyword Arguments:
         separator {str} -- csv separator, ignored for .npy files (default: {","})
-        points_clustering_tolerance {int} -- number of decimal points to be 
+        points_clustering_tolerance {int} -- epsilon delta to be 
         taken into account when scanning for rectilinear datasets (default: {4})
         mode {str} -- mode of dataset, supported values: scipy or c (default: {"scipy"})
     
@@ -55,13 +54,18 @@ def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
         #TO BE IMPROVED
         raise NumflowException("Only rectilinear datasets supported")
     else:
-        pyramide = build_pyramide3D(axis, data)
+        #pyramide = build_pyramide3D(axis, data)
         if mode == "c":
             return RectilinearDataset(axis, data)
         elif mode == "scipy":
-            return ScipyRectilinearDataset(RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0]))
+            return ScipyRectilinearDataset(axis, data)
         #elif mode == "both":
-        return RectilinearDataset(axis, data), ScipyRectilinearDataset(RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0]))
+        return RectilinearDataset(axis, data), ScipyRectilinearDataset(axis, data)
 
 
-    
+def sample_rectilinear_dataset(dataset, x, y, z):
+    pos, vals = sample_dataset_3d(dataset.data, dataset.axis, x, y, z)
+    print(pos)
+    print(vals)
+
+    return pos, vals
