@@ -1,6 +1,6 @@
 from .exception import NumflowException
 from scipy.interpolate import RegularGridInterpolator 
-from .dataset import RectilinearDataset
+from .dataset import RectilinearDataset, ScipyRectilinearDataset
 import numpy as np
 import gc
 from .cnumflow import construct_rectilinear_3d, load_file
@@ -49,18 +49,19 @@ def load(filename, separator=",", points_clustering_tolerance=4, mode="scipy"):
 
     #try constructing rectilinear
     gc.collect()
-
     axis, data = construct_rectilinear_3d(data, points_clustering_tolerance)
 
     if axis is None:
         #TO BE IMPROVED
-        raise NumflowException("Only rectilinear datasets supported: {}".format(data.ndim))
+        raise NumflowException("Only rectilinear datasets supported")
+    else:
+        pyramide = build_pyramide3D(axis, data)
+        if mode == "c":
+            return RectilinearDataset(axis, data)
+        elif mode == "scipy":
+            return ScipyRectilinearDataset(RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0]))
+        #elif mode == "both":
+        return RectilinearDataset(axis, data), ScipyRectilinearDataset(RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0]))
 
-    if mode == "c":
-        return RectilinearDataset(axis, data)
-    if mode == "both":
-        return RectilinearDataset(axis, data), RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0])
-    #else scipy
-    return RegularGridInterpolator(axis, data, bounds_error=False, fill_value=[0, 0, 0])
 
     

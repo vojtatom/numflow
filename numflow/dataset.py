@@ -7,6 +7,7 @@ class RectilinearDataset:
     def __init__(self, axis, data):
         self.axis = axis
         self.data = data
+        self.type = "c"
     
 
     def __call__(self, points):
@@ -29,3 +30,11 @@ class RectilinearDataset:
 
         return data
     
+
+class ScipyRectilinearDataset:
+    def __init__(self, interpolator):
+        self.interpolator = interpolator
+        self.type = "scipy"
+
+    def __call__(self, points):
+        return self.interpolator(points)
